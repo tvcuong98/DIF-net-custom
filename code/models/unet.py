@@ -92,7 +92,7 @@ class UNet(nn.Module):
         x1 = self.inc(x)
         xs = [x1]
 
-        if "enc" in self.freq_fuse_type and self.use_fno:
+        if self.use_fno and self.freq_fuse_type and "enc" in self.freq_fuse_type:
             for (conv, fuse, fre_h) in zip(
                 [self.down1, self.down2, self.down3, self.down4],
                 self.fuse,
@@ -104,7 +104,7 @@ class UNet(nn.Module):
                 xs.append(conv(xs[-1]))
         x = xs[-1]
 
-        if "dec" in self.freq_fuse_type and self.use_fno:
+        if self.use_fno and self.freq_fuse_type and "dec" in self.freq_fuse_type:
             x = self.up1(x, xs[3], fre_h_s[-1], self.fuse[-1])
             x = self.up2(x, xs[2], fre_h_s[-2], self.fuse[-2])
             x = self.up3(x, xs[1], fre_h_s[-3], self.fuse[-3])
