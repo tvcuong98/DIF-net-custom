@@ -158,6 +158,9 @@ if __name__ == '__main__':
         if len(set(multi_element_lengths)) > 1:
             parser.error(f"Inconsistent lengths for stage arguments with multiple elements: {multi_element_lengths}")
         num_stages = multi_element_lengths[0]
+    else:
+        # All stage args have single element - default to 4 stages (matching UNet's 4 down blocks)
+        num_stages = 4
     # Auto-fill single-element lists
     for arg_name in stage_args:
         arg_value = getattr(args, arg_name)
