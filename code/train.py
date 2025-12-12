@@ -135,46 +135,48 @@ if __name__ == '__main__':
  
     ############ <BEGIN> : SMART VALIDATION ##########
     # CHANGE: Added smart validation and auto-fill for stage configurations
-    stage_args = [
-        "trunc_mode_stages",
-        "use_sobel_stages",
-        "patch_based_stages",
-        "patch_size_stages",
-        "factorize_mode_stages",
-        "use_attn_stages"
-    ]
-    # Assert that parameters are not None
-    assert args.trunc_mode_stages is not None, "trunc_mode_stages cannot be None"
-    assert args.use_sobel_stages is not None, "use_sobel_stages cannot be None"
-    assert args.patch_based_stages is not None, "patch_based_stages cannot be None"
-    assert args.patch_size_stages is not None, "patch_size_stages cannot be None"
-    assert args.factorize_mode_stages is not None, "factorize_mode_stages cannot be None"
-    assert args.use_attn_stages is not None, "use_attn_stages cannot be None"
- 
-    # Validate lengths of lists with more than one element
-    multi_element_lengths = [len(getattr(args, arg_name)) for arg_name in stage_args if len(getattr(args, arg_name)) > 1]
-    print(multi_element_lengths)
-    if multi_element_lengths:
-        if len(set(multi_element_lengths)) > 1:
-            parser.error(f"Inconsistent lengths for stage arguments with multiple elements: {multi_element_lengths}")
-        num_stages = multi_element_lengths[0]
-    else:
-        # All stage args have single element - default to 4 stages (matching UNet's 4 down blocks)
-        num_stages = 4
-    # Auto-fill single-element lists
-    for arg_name in stage_args:
-        arg_value = getattr(args, arg_name)
-        if len(arg_value) == 1:
-            setattr(args, arg_name, arg_value * num_stages)
-    # Validate all lists have correct length
-    for arg_name in stage_args:
-        arg_value = getattr(args, arg_name)
-        if len(arg_value) != num_stages:
-            parser.error(f"{arg_name} length ({len(arg_value)}) must match number of stages ({num_stages})")
-    # Ensure at least one of patch_based or trunc_mode is enabled for each stage
-    for i in range(num_stages):
-        if not (args.patch_based_stages[i] or args.trunc_mode_stages[i]):
-            parser.error(f"Stage {i}: At least one of patch_based_stages[{i}] or trunc_mode_stages[{i}] must be True")
+    # Only validate stage args when using FNO
+    if args.use_fno:
+        stage_args = [
+            "trunc_mode_stages",
+            "use_sobel_stages",
+            "patch_based_stages",
+            "patch_size_stages",
+            "factorize_mode_stages",
+            "use_attn_stages"
+        ]
+        # Assert that parameters are not None
+        assert args.trunc_mode_stages is not None, "trunc_mode_stages cannot be None"
+        assert args.use_sobel_stages is not None, "use_sobel_stages cannot be None"
+        assert args.patch_based_stages is not None, "patch_based_stages cannot be None"
+        assert args.patch_size_stages is not None, "patch_size_stages cannot be None"
+        assert args.factorize_mode_stages is not None, "factorize_mode_stages cannot be None"
+        assert args.use_attn_stages is not None, "use_attn_stages cannot be None"
+
+        # Validate lengths of lists with more than one element
+        multi_element_lengths = [len(getattr(args, arg_name)) for arg_name in stage_args if len(getattr(args, arg_name)) > 1]
+        print(multi_element_lengths)
+        if multi_element_lengths:
+            if len(set(multi_element_lengths)) > 1:
+                parser.error(f"Inconsistent lengths for stage arguments with multiple elements: {multi_element_lengths}")
+            num_stages = multi_element_lengths[0]
+        else:
+            # All stage args have single element - default to 4 stages (matching UNet's 4 down blocks)
+            num_stages = 4
+        # Auto-fill single-element lists
+        for arg_name in stage_args:
+            arg_value = getattr(args, arg_name)
+            if len(arg_value) == 1:
+                setattr(args, arg_name, arg_value * num_stages)
+        # Validate all lists have correct length
+        for arg_name in stage_args:
+            arg_value = getattr(args, arg_name)
+            if len(arg_value) != num_stages:
+                parser.error(f"{arg_name} length ({len(arg_value)}) must match number of stages ({num_stages})")
+        # Ensure at least one of patch_based or trunc_mode is enabled for each stage
+        for i in range(num_stages):
+            if not (args.patch_based_stages[i] or args.trunc_mode_stages[i]):
+                parser.error(f"Stage {i}: At least one of patch_based_stages[{i}] or trunc_mode_stages[{i}] must be True")
     ############ <END> : SMART VALIDATION ##########
  
     # Dynamically generate args.name if not provided
